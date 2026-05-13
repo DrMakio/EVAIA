@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { 
-  Send, Bot, Sparkles, MessageSquare, Bell, ArrowRight, ArrowLeft, 
-  RotateCcw, Save, MessageCircle, ChevronRight, Lightbulb, XCircle, ArrowDown 
+  Send, ArrowLeft, RotateCcw, MessageCircle, XCircle, ArrowDown 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
@@ -29,7 +28,6 @@ interface Message {
 // IMAGES
 const HERO_IMG = "/hero.png";
 const MAKEUP_IMG = "/makeup.png";
-const WELLNESS_IMG = "/wellness.png";
 
 // --- COMPONENTS ---
 const ThinkingDots = () => (
@@ -93,11 +91,6 @@ function App() {
   const [isThinking, setIsThinking] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [isStopped, setIsStopped] = useState(false);
-  const abortControllerRef = useRef<AbortController | null>(null);
-  
-  // Image State
-  const [isImageLoading, setIsImageLoading] = useState(false);
-  const [imageReady, setImageReady] = useState(false);
   
   // Scroll State
   const [showScrollBottom, setShowScrollBottom] = useState(false);
@@ -262,7 +255,7 @@ function App() {
                   <div className="wizard-progress"><div className="wizard-progress-bar" style={{ width: `${((currentStep + 1) / (currentQuestionsList?.length || 1)) * 100}%` }}></div></div>
                   <h2 className="question-title serif-text">{currentQuestion?.question}</h2>
                   <div className="options-list">
-                    {currentQuestion?.type === 'select' && currentQuestion.options?.map(opt => (
+                    {currentQuestion?.type === 'select' && currentQuestion.options?.map((opt: any) => (
                       <button key={opt} className={`option-btn ${answers[currentQuestion.id] === opt ? 'selected' : ''}`} onClick={() => setAnswers(p => ({ ...p, [currentQuestion.id]: opt }))}>{opt}</button>
                     ))}
                     {currentQuestion?.type === 'text' && <textarea className="text-input" value={answers[currentQuestion.id] || ''} onChange={e => setAnswers(p => ({ ...p, [currentQuestion.id]: e.target.value }))} />}
