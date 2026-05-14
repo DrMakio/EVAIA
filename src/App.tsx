@@ -212,7 +212,7 @@ function App() {
     await streamResponse(currentInput, systemInstruction);
   };
 
-  if (!API_KEY) return <div className="serif-text" style={{ padding: '60px', textAlign: 'center' }}>Falta API Key</div>;
+  if (!import.meta.env.VITE_GROQ_API_KEY) return <div className="serif-text" style={{ padding: '60px', textAlign: 'center' }}>Falta API Key</div>;
 
   return (
     <div className="app-container">
