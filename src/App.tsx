@@ -62,19 +62,21 @@ const AnimatedBackground = ({ active }: { active: boolean }) => {
   const totalFrames = 200;
 
   useEffect(() => {
-    if (!active) return;
+    // Animación constante: 150ms idle, 60ms active
+    const speed = active ? 60 : 150;
     const interval = setInterval(() => {
       setFrame(f => (f % totalFrames) + 1);
-    }, 50); // 20fps
+    }, speed);
     return () => clearInterval(interval);
   }, [active]);
 
   return (
-    <div className={`animated-bg-container ${active ? 'visible' : ''}`}>
+    <div className="animated-bg-container visible">
       <img 
         src={`/frames/ezgif-frame-${frame.toString().padStart(3, '0')}.jpg`} 
         alt="bg-frame" 
         className="bg-frame-img"
+        style={{ opacity: active ? 0.25 : 0.12, transition: 'opacity 1s ease' }}
       />
       <div className="bg-overlay"></div>
     </div>
