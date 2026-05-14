@@ -10,10 +10,16 @@ import './index.css';
 import { WIZARD_THEMES, WIZARD_DATA, OUTFIT_WIZARD } from './wizardData';
 
 // --- CONFIG ---
-const groq = new Groq({
-  apiKey: import.meta.env.VITE_GROQ_API_KEY,
-  dangerouslyAllowBrowser: true
-});
+let groq: Groq | null = null;
+const initGroq = (key: string) => {
+  if (!groq && key) {
+    groq = new Groq({
+      apiKey: key,
+      dangerouslyAllowBrowser: true
+    });
+  }
+  return groq;
+};
 
 interface Message {
   id: string;
@@ -155,7 +161,10 @@ function App() {
     setMessages(prev => [...prev, { id: msgId, role: 'bot', text: '', timestamp: new Date(), isStreaming: true }]);
 
     try {
-      const stream = await groq.chat.completions.create({
+      const client = initGroq(import.meta.env.VITE_GROQ_API_KEY);
+      if (!client) throw new Error("No Groq client");
+
+      const stream = await client.chat.completions.create({
         messages: [
           { role: 'system', content: systemInstruction },
           { role: 'user', content: prompt }
