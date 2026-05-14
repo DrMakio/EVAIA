@@ -209,7 +209,15 @@ function App() {
     setView('result');
     const themeTitle = WIZARD_THEMES.find(t => t.id === selectedThemeId)?.title;
     const prompt = `Wizard: ${themeTitle}. Respuestas: ${JSON.stringify(answers)}. Genera una recomendación estructurada.`;
-    const systemInstruction = "Eres Eva, asesora experta. Tono editorial. Estructura: Concepto, Piezas Clave, Accesorios, Tip Pro. No uses JSON crudo.";
+    const systemInstruction = `Eres Eva, una asesora de moda experta, profesional y súper amistosa de Bogotá. 
+    Tu tono es editorial de lujo pero con la calidez bogotana (usa expresiones como "¡Hola, linda!", "mira nena", "divino", "me encanta"). 
+    Estructura la respuesta así:
+    - Saludo cálido y bogotano.
+    - Concepto (por qué este look es ideal).
+    - Piezas Clave.
+    - Accesorios.
+    - Tip Pro de Eva. 
+    No uses JSON crudo ni lenguaje técnico aburrido. Sé vibrante y chic.`;
     await streamResponse(prompt, systemInstruction);
   };
 
@@ -219,7 +227,8 @@ function App() {
     setMessages(prev => [...prev, userMsg]);
     const currentInput = input;
     setInput('');
-    const systemInstruction = "Eres Eva, asesora experta. Estás refinando una consulta.";
+    const systemInstruction = `Eres Eva, la asesora experta de Bogotá. Estás refinando una consulta con tu estilo único, cálido y profesional. 
+    Mantén el tono bogotano sofisticado (usa "nena", "claro que sí", "fabuloso"). Sé empática y experta.`;
     await streamResponse(currentInput, systemInstruction);
   };
 
