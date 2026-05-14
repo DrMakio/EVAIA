@@ -38,9 +38,9 @@ export const OUTFIT_WIZARD: WizardBlock[] = [
       },
       {
         id: 'clima',
-        question: '¿En qué ciudad o clima estarás?',
+        question: '¿Qué clima predomina en tu ubicación?',
         type: 'select',
-        options: ['Bogotá (frío)', 'Medellín (templado)', 'Cali (cálido)', 'Cartagena o Barranquilla (cálido húmedo)', 'Eje Cafetero', 'Llanos', 'Costa Pacífica', 'Otro'],
+        options: ['Frío', 'Templado', 'Cálido Seco', 'Cálido Húmedo (Playa)', 'Muy Frío / Nieve', 'Otro'],
         required: true
       },
       {
