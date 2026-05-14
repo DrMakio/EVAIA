@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 import { 
   Send, ArrowLeft, RotateCcw, MessageCircle, XCircle, ArrowDown 
 } from 'lucide-react';
@@ -10,12 +10,10 @@ import './index.css';
 import { WIZARD_THEMES, WIZARD_DATA, OUTFIT_WIZARD } from './wizardData';
 
 // --- CONFIG ---
-const getApiKey = () => {
-  try { return (import.meta as any).env?.VITE_GEMINI_API_KEY || ""; } 
-  catch (e) { return ""; }
-};
-const API_KEY = getApiKey();
-const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
+const groq = new Groq({
+  apiKey: import.meta.env.VITE_GROQ_API_KEY,
+  dangerouslyAllowBrowser: true
+});
 
 interface Message {
   id: string;
@@ -156,47 +154,39 @@ function App() {
     setIsThinking(true);
     setMessages(prev => [...prev, { id: msgId, role: 'bot', text: '', timestamp: new Date(), isStreaming: true }]);
 
-    const maxRetries = 3;
-    let retryCount = 0;
-    let success = false;
-
-    while (retryCount < maxRetries && !success) {
-      try {
-        const model = genAI!.getGenerativeModel({ model: "gemini-2.0-flash-lite", systemInstruction });
-        const result = await model.generateContentStream(prompt);
+    try {
+      const stream = await groq.chat.completions.create({
+        messages: [
+          { role: 'system', content: systemInstruction },
+          { role: 'user', content: prompt }
+        ],
+        model: "llama-3.3-70b-versatile",
+        stream: true,
+      });
+      
+      setIsThinking(false);
+      let fullText = '';
+      
+      for await (const chunk of stream) {
+        if (isStopped) break;
+        const content = chunk.choices[0]?.delta?.content || "";
+        if (!content) continue;
         
-        setIsThinking(false);
-        let fullText = '';
+        fullText += content;
         
-        for await (const chunk of result.stream) {
+        // Simulación de escritura por palabras para mantener la estética editorial suave
+        const words = content.split(' ');
+        for (let i = 0; i < words.length; i++) {
           if (isStopped) break;
-          const chunkText = chunk.text();
-          fullText += chunkText;
-          
-          const words = chunkText.split(' ');
-          for (let i = 0; i < words.length; i++) {
-            if (isStopped) break;
-            setMessages(prev => prev.map(m => 
-              m.id === msgId ? { ...m, text: m.text + (i === 0 ? '' : ' ') + words[i] } : m
-            ));
-            await new Promise(r => setTimeout(r, 60));
-          }
-        }
-        success = true;
-      } catch (e: any) {
-        console.error("Attempt", retryCount + 1, "failed:", e);
-        if (e.message?.includes("429") || e.message?.includes("quota")) {
-          retryCount++;
-          if (retryCount < maxRetries) {
-            await new Promise(r => setTimeout(r, 2000 * retryCount)); // Backoff
-            continue;
-          }
-          setMessages(prev => prev.map(m => m.id === msgId ? { ...m, text: m.text + '\n\n*Eva está un poco saturada de consultas en este momento. Por favor, espera un minuto e intenta de nuevo.*' } : m));
-        } else {
-          setMessages(prev => prev.map(m => m.id === msgId ? { ...m, text: m.text + '\n\n*Eva ha tenido un momento de distracción. ¿Podemos intentar de nuevo?*' } : m));
-          break;
+          setMessages(prev => prev.map(m => 
+            m.id === msgId ? { ...m, text: m.text + (i === 0 ? '' : ' ') + words[i] } : m
+          ));
+          await new Promise(r => setTimeout(r, 40)); // Un poco más rápido que antes por la velocidad de Groq
         }
       }
+    } catch (e: any) {
+      console.error("Groq Error:", e);
+      setMessages(prev => prev.map(m => m.id === msgId ? { ...m, text: m.text + '\n\n*Eva ha tenido un momento de distracción técnica. Por favor, intenta de nuevo.*' } : m));
     }
     
     setIsStreaming(false);
